@@ -1,0 +1,10 @@
+# This is an example TOML file
+
+[server]
+host = "localhost"
+port = 8080
+
+[database]
+name = "my_db"
+user = "my_user"
+password = "my_password"

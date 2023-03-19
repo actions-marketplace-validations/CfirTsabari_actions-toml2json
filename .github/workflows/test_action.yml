@@ -1,0 +1,59 @@
+name: Test actions-toml2json action
+on:
+  workflow_call:
+  workflow_dispatch:
+jobs:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild the dist/ directory
+        run: |
+          npm run all
+          npm run format-check
+
+      - name: Compare the expected and actual dist/ directories
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build.  See status below:"
+            git diff
+            exit 1
+          fi
+        id: diff
+
+      # If index.js was different than expected, upload the expected version as an artifact
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+        with:
+          name: dist
+          path: dist/
+
+  run:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022, macos-11,macos-12]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: convert toml to json
+        id: convert
+        uses: ./
+        with:
+          toml-file-path: test_data/example.toml
+      - name: validate output
+        run: |
+          test ${{ fromJSON(steps.convert.outputs.json-output).server.host }} == localhost
+          test ${{ fromJSON(steps.convert.outputs.json-output).server.port }} == 8080
+          test ${{ fromJSON(steps.convert.outputs.json-output).database.name }} == my_db
+          test ${{ fromJSON(steps.convert.outputs.json-output).database.user }} == my_user
+          test ${{ fromJSON(steps.convert.outputs.json-output).database.password }} == my_password

@@ -1,0 +1,18 @@
+name: "Convert toml to json"
+author: "@CfirTsabari"
+description: Converts a TOML file to JSON output
+branding:
+  icon: "circle"
+  color: "blue"
+
+inputs:
+  toml-file-path:
+    description: 'The path to the TOML file to convert to JSON.'
+    required: true
+outputs:
+  json-output:
+    description: 'the json output'
+    
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
