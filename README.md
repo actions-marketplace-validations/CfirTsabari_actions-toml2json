@@ -31,7 +31,10 @@ jobs:
 
       - name: Run action
         id: convert
-        uses: CfirTsabari/actions-toml2json@v1
+        uses: CfirTsabari/actions-toml2json@v1.0.0
+        with:
+          toml-file-path: example.toml
+
       - name: Print json output
         run: echo ${{ steps.convert.outputs.json-output }}
 ```
